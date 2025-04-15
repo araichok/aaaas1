@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-// Middleware для аутентификации с JWT
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -17,7 +16,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		token := authHeader[len("Bearer "):]
-		// Здесь ты можешь добавить проверку токена через твою систему авторизации
 		if token != "your-valid-token" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()

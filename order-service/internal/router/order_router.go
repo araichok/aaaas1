@@ -1,5 +1,6 @@
 package router
 
+// not used
 import (
 	"order-service/internal/handler"
 	"order-service/internal/repository"

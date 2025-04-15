@@ -10,20 +10,18 @@ import (
 )
 
 func main() {
-	// Инициализация логирования
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal("unable to create logger", zap.Error(err))
 	}
 	defer logger.Sync()
 
-	// Инициализация Gin с логированием
 	r := gin.Default()
-	r.Use(ginzap.Ginzap(logger, time.RFC3339, true)) // Логирование запросов
+	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 
-	// Инициализация маршрутов
+	router.InitGRPCClients()
 	router.NewRouter(r)
 
-	// Запуск сервера
 	r.Run(":8080")
 }

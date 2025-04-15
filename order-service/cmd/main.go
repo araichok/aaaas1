@@ -22,7 +22,7 @@ func main() {
 	orderUC := usecase.NewOrderUsecase(orderRepo)
 	orderGRPCServer := grpcHandler1.NewOrderServer(orderUC)
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":50052")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -30,7 +30,7 @@ func main() {
 	s := grpc.NewServer()
 	orderpb.RegisterOrderServiceServer(s, orderGRPCServer)
 
-	log.Println("Order gRPC server listening on :50051")
+	log.Println("Order gRPC server listening on :50052")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
