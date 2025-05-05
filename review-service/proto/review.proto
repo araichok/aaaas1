@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package reviews;
+
+option go_package = "review-service/proto/reviewpb";
+
+import "google/protobuf/timestamp.proto";
+
+
+service ReviewService {
+  rpc CreateReview(CreateReviewRequest) returns (CreateReviewResponse);
+  rpc UpdateReview(UpdateReviewRequest) returns (UpdateReviewResponse);
+  rpc GetReview(GetReviewRequest) returns (GetReviewResponse);
+}
+
+message Review {
+  uint64 id = 1;
+  uint64 product_id = 2;
+  uint64 user_id = 3;
+  double rating = 4;
+  string comment = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CreateReviewRequest {
+  uint64 product_id = 1;
+  uint64 user_id = 2;
+  double rating = 3;
+  string comment = 4;
+}
+
+message CreateReviewResponse {
+  Review review = 1;
+}
+
+message UpdateReviewRequest {
+  uint64 id = 1;
+  uint64 product_id = 2;
+  uint64 user_id = 3;
+  double rating = 4;
+  string comment = 5;
+}
+
+message UpdateReviewResponse {
+  Review review = 1;
+}
+
+message GetReviewRequest {
+  uint64 id = 1;
+}
+
+message GetReviewResponse {
+  Review review = 1;
+}
