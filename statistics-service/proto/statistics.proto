@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package statistics;
+
+option go_package = "statistics-service/proto;proto";
+
+service StatisticsService {
+  rpc GetUserStatistics (UserStatisticsRequest) returns (UserStatisticsResponse);
+  rpc GetUserOrdersStatistics (UserOrderStatisticsRequest) returns (UserOrderStatisticsResponse);
+}
+
+message UserStatisticsRequest {
+  string user_id = 1;
+}
+
+message UserStatisticsResponse {
+  int32 total_inventory_created = 1;
+}
+
+message UserOrderStatisticsRequest {
+  string user_id = 1;
+}
+
+message UserOrderStatisticsResponse {
+  int32 total_orders_created = 1;
+  int32 total_orders_updated = 2;
+  int32 total_orders_deleted = 3;
+  map<int32, int32> orders_hourly_stats = 4;
+}
