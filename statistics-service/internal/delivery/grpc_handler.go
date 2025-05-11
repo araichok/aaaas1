@@ -17,7 +17,7 @@ func NewStatisticsHandler(uc *usecase.StatisticsUseCase) *StatisticsHandler {
 }
 
 func (s *StatisticsHandler) GetUserStatistics(ctx context.Context, req *pb.UserStatisticsRequest) (*pb.UserStatisticsResponse, error) {
-	count := s.uc.GetInventoryCount(req.UserId)
+	count := s.uc.GetInventoryCount()
 	return &pb.UserStatisticsResponse{TotalInventoryCreated: count}, nil
 }
 

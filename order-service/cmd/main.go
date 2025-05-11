@@ -4,8 +4,10 @@ import (
 	"log"
 	"net"
 
+	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
 	"order-service/database"
+	"order-service/internal/events"
 	grpcHandler1 "order-service/internal/grpc"
 	"order-service/internal/repository"
 	"order-service/internal/usecase"
@@ -18,8 +20,15 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to NATS: %v", err)
+	}
+	defer nc.Close()
+
 	orderRepo := repository.NewOrderRepository(db)
-	orderUC := usecase.NewOrderUsecase(orderRepo)
+	publisher := events.NewEventPublisher(nc)
+	orderUC := usecase.NewOrderUsecase(orderRepo, publisher)
 	orderGRPCServer := grpcHandler1.NewOrderServer(orderUC)
 
 	lis, err := net.Listen("tcp", ":50052")

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"inventory-service/internal/domain"
 	"sync"
+	"time"
 )
 
 type ProductCache struct {
@@ -21,7 +22,7 @@ func (c *ProductCache) Set(p domain.Product) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.products[p.ID] = p
-	fmt.Println("Product cached:", p.ID)
+	fmt.Println("[CACHE] Set product:", p.ID)
 }
 
 func (c *ProductCache) Get(id string) (domain.Product, bool) {
@@ -29,9 +30,9 @@ func (c *ProductCache) Get(id string) (domain.Product, bool) {
 	defer c.mu.RUnlock()
 	p, found := c.products[id]
 	if found {
-		fmt.Println("Cache HIT for ID:", id)
+		fmt.Println("[CACHE] HIT for ID:", id)
 	} else {
-		fmt.Println("Cache MISS for ID:", id)
+		fmt.Println("[CACHE] MISS for ID:", id)
 	}
 	return p, found
 }
@@ -43,7 +44,7 @@ func (c *ProductCache) GetAll() []domain.Product {
 	for _, p := range c.products {
 		list = append(list, p)
 	}
-	fmt.Printf("Cache returned %d products ", len(list))
+	fmt.Printf("[CACHE] Returning %d products ", len(list))
 	return list
 }
 
@@ -54,5 +55,5 @@ func (c *ProductCache) LoadFromDB(products []domain.Product) {
 	for _, p := range products {
 		c.products[p.ID] = p
 	}
-	fmt.Printf("Cache initialized with %d products ", len(products))
+	fmt.Printf("[CACHE] Initialized/refreshed with %d products at %s ", len(products), time.Now().Format(time.RFC3339))
 }

@@ -4,8 +4,11 @@ import (
 	"log"
 	"net"
 
+	"github.com/nats-io/nats.go"
 	"google.golang.org/grpc"
+
 	"inventory-service/database"
+	"inventory-service/events"
 	"inventory-service/internal/cache"
 	grpcHandler "inventory-service/internal/grpc"
 	"inventory-service/internal/repository"
@@ -16,8 +19,16 @@ import (
 func main() {
 	db := database.InitMongo()
 	repo := repository.NewMongoProductRepo(db)
+
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		log.Fatalf("failed to connect to NATS: %v", err)
+	}
+	defer nc.Close()
+
 	productCache := cache.NewProductCache()
-	uc := usecase.NewProductUsecase(repo, productCache)
+	publisher := events.NewEventPublisher(nc)
+	uc := usecase.NewProductUsecase(repo, productCache, publisher)
 	grpcServer := grpcHandler.NewInventoryServer(uc)
 
 	lis, err := net.Listen("tcp", "127.0.0.1:50051")

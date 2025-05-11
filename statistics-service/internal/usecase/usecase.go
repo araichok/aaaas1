@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"log"
 	"statistics-service/internal/repository"
 )
 
@@ -12,24 +13,25 @@ func NewStatisticsUseCase(r *repository.MongoRepository) *StatisticsUseCase {
 	return &StatisticsUseCase{repo: r}
 }
 
-func (u *StatisticsUseCase) IncrementInventoryCreated(userID string) {
-	u.repo.SaveInventoryEvent(userID)
+func (u *StatisticsUseCase) IncrementInventoryCreated() {
+	u.repo.SaveInventoryEvent()
 }
 
-func (u *StatisticsUseCase) IncrementInventoryUpdated(userID string) {
-	u.repo.SaveInventoryUpdate(userID)
+func (u *StatisticsUseCase) IncrementInventoryUpdated() {
+	u.repo.SaveInventoryUpdate()
 }
 
-func (u *StatisticsUseCase) IncrementInventoryDeleted(userID string) {
-	u.repo.SaveInventoryDelete(userID)
+func (u *StatisticsUseCase) IncrementInventoryDeleted() {
+	u.repo.SaveInventoryDelete()
 }
 
-func (u *StatisticsUseCase) GetInventoryCount(userID string) int32 {
-	return u.repo.GetInventoryCount(userID)
+func (u *StatisticsUseCase) GetInventoryCount() int32 {
+	return u.repo.GetInventoryCount()
 }
 
-func (u *StatisticsUseCase) IncrementOrderCreated(userID string, timeStr string) {
-	u.repo.SaveOrderCreated(userID, timeStr)
+func (u *StatisticsUseCase) IncrementOrderCreated(userID, time string) {
+	log.Println("[USECASE] IncrementOrderCreated for:", userID)
+	u.repo.SaveOrderCreated(userID, time)
 }
 
 func (u *StatisticsUseCase) IncrementOrderUpdated(userID string) {

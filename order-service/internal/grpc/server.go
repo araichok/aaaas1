@@ -37,6 +37,10 @@ func convertDomainOrderToPB(o *domain.Order) *orderpb.Order {
 }
 
 func (s *OrderServer) CreateOrder(ctx context.Context, req *orderpb.CreateOrderRequest) (*orderpb.OrderResponse, error) {
+	if req.Order == nil {
+		return nil, errors.New("missing 'order' field in request")
+	}
+
 	pbOrder := req.Order
 
 	var domainItems []domain.ProductItem
@@ -78,7 +82,7 @@ func (s *OrderServer) GetOrderByID(ctx context.Context, req *orderpb.GetOrderReq
 
 func (s *OrderServer) UpdateOrderStatus(ctx context.Context, req *orderpb.UpdateOrderStatusRequest) (*orderpb.OrderResponse, error) {
 
-	err := s.usecase.UpdateStatus(req.Id, domain.OrderStatus(req.Status))
+	err := s.usecase.UpdateOrderStatus(req.Id, domain.OrderStatus(req.Status))
 	if err != nil {
 		return nil, err
 	}

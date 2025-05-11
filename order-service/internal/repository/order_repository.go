@@ -20,8 +20,14 @@ func NewOrderRepository(db *mongo.Database) *OrderRepository {
 
 func (r *OrderRepository) Create(order *domain.Order) error {
 	order.CreatedAt = time.Now().Unix()
-	_, err := r.collection.InsertOne(context.TODO(), order)
-	return err
+
+	res, err := r.collection.InsertOne(context.TODO(), order)
+	if err != nil {
+		return err
+	}
+
+	order.ID = res.InsertedID.(primitive.ObjectID)
+	return nil
 }
 
 func (r *OrderRepository) GetByID(id string) (*domain.Order, error) {

@@ -48,7 +48,7 @@ func (h *OrderHandler) UpdateOrderStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.usecase.UpdateStatus(id, input.Status); err != nil {
+	if err := h.usecase.UpdateOrderStatus(id, input.Status); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})
 		return
 	}

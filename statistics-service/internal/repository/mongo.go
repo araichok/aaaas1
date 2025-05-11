@@ -30,39 +30,45 @@ func NewMongoRepository(uri string) *MongoRepository {
 	}
 }
 
-func (r *MongoRepository) SaveInventoryEvent(userID string) {
+// --- Inventory: Глобальная статистика (без user_id) ---
+
+func (r *MongoRepository) SaveInventoryEvent() {
 	_, _ = r.collection.UpdateOne(context.TODO(),
-		bson.M{"user_id": userID},
+		bson.M{"type": "global"},
 		bson.M{"$inc": bson.M{"created": 1}},
 		options.Update().SetUpsert(true),
 	)
 }
 
-func (r *MongoRepository) SaveInventoryUpdate(userID string) {
+func (r *MongoRepository) SaveInventoryUpdate() {
 	_, _ = r.collection.UpdateOne(context.TODO(),
-		bson.M{"user_id": userID},
+		bson.M{"type": "global"},
 		bson.M{"$inc": bson.M{"updated": 1}},
 		options.Update().SetUpsert(true),
 	)
 }
 
-func (r *MongoRepository) SaveInventoryDelete(userID string) {
+func (r *MongoRepository) SaveInventoryDelete() {
 	_, _ = r.collection.UpdateOne(context.TODO(),
-		bson.M{"user_id": userID},
+		bson.M{"type": "global"},
 		bson.M{"$inc": bson.M{"deleted": 1}},
 		options.Update().SetUpsert(true),
 	)
 }
 
-func (r *MongoRepository) GetInventoryCount(userID string) int32 {
+func (r *MongoRepository) GetInventoryCount() int32 {
 	var result struct {
 		Created int32 `bson:"created"`
 	}
-	_ = r.collection.FindOne(context.TODO(), bson.M{"user_id": userID}).Decode(&result)
+	_ = r.collection.FindOne(context.TODO(), bson.M{"type": "global"}).Decode(&result)
 	return result.Created
 }
 
+// --- Orders: Статистика по user_id ---
+
 func (r *MongoRepository) SaveOrderCreated(userID string, timeStr string) {
+	log.Println("[MONGO] SaveOrderCreated for:", userID)
+
 	parsedTime, err := time.Parse(time.RFC3339, timeStr)
 	if err != nil {
 		log.Println("Error parsing time:", err)
@@ -70,16 +76,17 @@ func (r *MongoRepository) SaveOrderCreated(userID string, timeStr string) {
 	}
 	hour := parsedTime.Hour()
 
-	_, _ = r.ordersCol.UpdateOne(context.TODO(),
+	_, err = r.ordersCol.UpdateOne(context.TODO(),
 		bson.M{"user_id": userID},
-		bson.M{
-			"$inc": bson.M{
-				"created":                             1,
-				"hourly_orders." + strconv.Itoa(hour): 1,
-			},
-		},
+		bson.M{"$inc": bson.M{
+			"created":                             1,
+			"hourly_orders." + strconv.Itoa(hour): 1,
+		}},
 		options.Update().SetUpsert(true),
 	)
+	if err != nil {
+		log.Println("Mongo update error:", err)
+	}
 }
 
 func (r *MongoRepository) SaveOrderUpdated(userID string) {

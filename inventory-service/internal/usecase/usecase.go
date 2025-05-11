@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"fmt"
+	"inventory-service/events"
 	"inventory-service/internal/cache"
 	"inventory-service/internal/domain"
 	"inventory-service/internal/repository"
@@ -17,23 +17,22 @@ type ProductUsecase interface {
 }
 
 type productUsecase struct {
-	repo  repository.ProductRepository
-	cache *cache.ProductCache
+	repo      repository.ProductRepository
+	cache     *cache.ProductCache
+	publisher *events.EventPublisher
 }
 
-func NewProductUsecase(r repository.ProductRepository, c *cache.ProductCache) ProductUsecase {
-	uc := &productUsecase{repo: r, cache: c}
+func NewProductUsecase(r repository.ProductRepository, c *cache.ProductCache, pub *events.EventPublisher) ProductUsecase {
+	uc := &productUsecase{repo: r, cache: c, publisher: pub}
 
 	products, _ := r.List()
 	c.LoadFromDB(products)
 
 	go func() {
 		ticker := time.NewTicker(12 * time.Hour)
-
 		for range ticker.C {
 			products, _ := r.List()
 			c.LoadFromDB(products)
-			fmt.Println("Cache refreshed at", time.Now())
 		}
 	}()
 
@@ -44,6 +43,7 @@ func (u *productUsecase) Create(p *domain.Product) error {
 	err := u.repo.Create(p)
 	if err == nil {
 		u.cache.Set(*p)
+		u.publisher.PublishInventoryEvent("created", p)
 	}
 	return err
 }
@@ -59,14 +59,19 @@ func (u *productUsecase) Update(p *domain.Product) error {
 	err := u.repo.Update(p)
 	if err == nil {
 		u.cache.Set(*p)
+		u.publisher.PublishInventoryEvent("updated", p)
 	}
 	return err
 }
 
 func (u *productUsecase) Delete(id string) error {
-	err := u.repo.Delete(id)
+	product, err := u.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+	err = u.repo.Delete(id)
 	if err == nil {
-
+		u.publisher.PublishInventoryEvent("deleted", product)
 	}
 	return err
 }
