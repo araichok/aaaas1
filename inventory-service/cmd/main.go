@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 	"inventory-service/database"
+	"inventory-service/internal/cache"
 	grpcHandler "inventory-service/internal/grpc"
 	"inventory-service/internal/repository"
 	"inventory-service/internal/usecase"
@@ -15,7 +16,8 @@ import (
 func main() {
 	db := database.InitMongo()
 	repo := repository.NewMongoProductRepo(db)
-	uc := usecase.NewProductUsecase(repo)
+	productCache := cache.NewProductCache()
+	uc := usecase.NewProductUsecase(repo, productCache)
 	grpcServer := grpcHandler.NewInventoryServer(uc)
 
 	lis, err := net.Listen("tcp", "127.0.0.1:50051")
